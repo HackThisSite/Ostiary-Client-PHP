@@ -30,7 +30,7 @@
     "require-dev": {
         "ext-ctype": "*",
         "ext-phar": "*",
-        "phpunit/phpunit": "^6.2.3",
+        "phpunit/phpunit": "^4.8 || ^6.3",
         "clean/phpdoc-md" : "dev-add-throws"
     },
     "autoload": {
