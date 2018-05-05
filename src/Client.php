@@ -78,11 +78,13 @@ class Client {
     }
 
     // Load the driver
-    if ($options['driver'] == 'redis') {
+    if ($this->options['driver'] == 'redis') {
       $this->driver = new RedisDriver($this->options);
     } else {
       $this->driver = new OstiaryDriver($this->options);
     }
+
+    Util::debug('Ostiary\Client instantiated'.($debug_callback ? ' with debug callback' : ''));
   }
 
 
@@ -343,6 +345,9 @@ class Client {
         throw new \InvalidArgumentException('driver must be set to only: ostiary, redis');
 
       if ($opts['driver'] == 'ostiary') {
+
+        if (empty($opts['secret']))
+          throw new \InvalidArgumentException('secret must be set if driver = ostiary');
 
         if (empty($opts['ostiary']))
           throw new \InvalidArgumentException('ostiary settings must be set if driver = ostiary');

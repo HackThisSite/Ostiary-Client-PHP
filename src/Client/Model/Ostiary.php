@@ -8,9 +8,7 @@ use Ostiary\Client\Exception\OstiaryServerException;
 
 class Ostiary implements ModelInterface {
 
-
   private $options;
-
 
   private $guzzle;
 
@@ -21,14 +19,14 @@ class Ostiary implements ModelInterface {
     $this->guzzle = new Guzzle(array(
       'base_uri' => $this->options['ostiary']['server'],
       'timeout'  => $this->options['ostiary']['timeout'],
-    ));
-    // Set User-Agent
-    $this->guzzle->getConfig()->setPath('headers/User-Agent', sprintf('Ostiary-Client-PHP/%s', OSTIARY_VERSION));
-    // Set Basic auth
-    $this->guzzle->getConfig()->setPath('request.options/auth', array(
-      $this->options['id'],
-      $this->options['secret'],
-      'Basic',
+      'headers'  => array(
+        'User-Agent' => sprintf('Ostiary-Client-PHP/%s', OSTIARY_VERSION),
+      ),
+      'auth'     => array(
+        $this->options['id'],
+        $this->options['secret'],
+        'Basic',
+      ),
     ));
   }
 
@@ -82,7 +80,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function setSession($session, $update_expiration) {
+  public function setSession($session) {
     $body = json_encode(array(
      'sid' => $session->getSessionID(),
      'str' => $session->getTimeStarted(),
@@ -169,7 +167,7 @@ class Ostiary implements ModelInterface {
     // Test HTTP codes
     if ($code >= 500) {
       throw new OstiaryServerException(sprintf('The Ostiary server had a failure: HTTP %d - %s', $code, $body));
-    } elseif ($code >= 400 && <= 499) {
+    } elseif ($code >= 400 && $code <= 499) {
       throw new OstiaryServerException(sprintf('Access denied to the Ostiary server: HTTP %d - %s', $code, $body));
     } elseif ($code != 200) {
       throw new OstiaryServerException(sprintf('There was an error interacting with the Ostiary server: HTTP %d - %s', $code, $body));
@@ -178,7 +176,7 @@ class Ostiary implements ModelInterface {
     // Process JSON
     $json = json_decode($body, true);
     if (empty($json))
-      throw new OstiaryServerException(sprintf('Invalid data returned from the Ostiary server: HTTP %d - %s', $code, $body))
+      throw new OstiaryServerException(sprintf('Invalid data returned from the Ostiary server: HTTP %d - %s', $code, $body));
 
     // Return JSON
     return $json;

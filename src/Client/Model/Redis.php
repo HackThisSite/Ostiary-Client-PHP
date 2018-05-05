@@ -52,7 +52,6 @@ class Redis implements ModelInterface {
   public function __construct($options) {
     $this->options = $options;
     $this->redis = new Predis($this->options['redis']);
-    Util::debug('Testing');
   }
 
 

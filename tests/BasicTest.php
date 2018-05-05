@@ -9,26 +9,28 @@ use Ostiary\Client as OstiaryClient;
 class BasicTest extends TestCase {
 
   /**
-   * @expectedException        Ostiary\Client\Exception\InvalidOptionsException
+   * @expectedException        InvalidArgumentException
    * @expectedExceptionMessage Debug callback is not callable
    */
   public function testDebugCallbackBad() {
     $this->assertNotInstanceOf(
       OstiaryClient::class,
       new OstiaryClient(array(
-        'driver' => 'redis',
-        'redis' => 'tcp://localhost',
+        'id' => 'test',
+        'secret' => 'secret',
       ), array(uniqid())));
   }
 
   public function testDebugCallbackOkay() {
+    define('OSTIARY_DEBUG', true);
     $ostiary = new OstiaryClient(array(
-      'driver' => 'redis',
-      'redis' => 'tcp://localhost',
+      'id' => 'test',
+      'secret' => 'secret',
     ), array(
       $this,
       'debugCallback'
     ));
+
   }
 
   public function debugCallback($message) {
