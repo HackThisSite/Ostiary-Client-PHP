@@ -2,8 +2,10 @@ dist: trusty
 sudo: false
 language: php
 
+services:
+  - redis-server
+
 php:
-  - 5.4
   - 5.5
   - 5.6
   - 7.0
@@ -17,7 +19,6 @@ install: travis_retry composer update --prefer-dist
 
 script:
   - ./vendor/bin/phpunit -v
-
 
 cache:
   directories:

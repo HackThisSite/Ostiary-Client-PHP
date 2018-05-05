@@ -20,9 +20,9 @@
         "ext-json": "*",
         "firebase/php-jwt": "^5.0",
         "guzzlehttp/guzzle": "^6.3",
-        "ircmaxell/random-lib": "^1.2",
         "predis/predis": "^1.1",
-        "siriusphp/validation": "^2.2"
+        "siriusphp/validation": "^2.2",
+        "paragonie/random-lib": "^2.0"
     },
     "suggest": {
         "ext-redis": "*"
