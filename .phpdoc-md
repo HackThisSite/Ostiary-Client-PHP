@@ -1,0 +1,12 @@
+<?php
+return (object)[
+  'rootNamespace' => 'Ostiary',
+  'destDirectory' => 'doc/api',
+  'format' => 'github',
+  'classes' => [
+    '\Ostiary\Session',
+    '\Ostiary\Client',
+    '\Ostiary\Client\Exception\OstiaryServerException',
+    '\Ostiary\Client\Exception\WebHookParseException',
+  ],
+];

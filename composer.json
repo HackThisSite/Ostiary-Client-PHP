@@ -1,0 +1,41 @@
+{
+    "name": "hackthissite/ostiaryclient",
+    "description": "PHP client library for the HackThisSite Ostiary session token manager",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "HackThisSite",
+            "email": "staff@hackthissite.org"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/Kage/phpdoc-md"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "ext-json": "*",
+        "firebase/php-jwt": "^5.0",
+        "guzzlehttp/guzzle": "^6.3",
+        "ircmaxell/random-lib": "^1.2",
+        "predis/predis": "^1.1",
+        "siriusphp/validation": "^2.2"
+    },
+    "suggest": {
+        "ext-redis": "*"
+    },
+    "require-dev": {
+        "ext-ctype": "*",
+        "ext-phar": "*",
+        "phpunit/phpunit": "^6.2.3",
+        "clean/phpdoc-md" : "dev-add-throws"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ostiary\\": "src"
+        }
+    }
+}
