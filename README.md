@@ -2,6 +2,9 @@
 
 This library provides a PHP client for the [Ostiary session manager](https://github.com/HackThisSite/Ostiary).
 
+[![Build Status](https://travis-ci.org/HackThisSite/Ostiary-Client-PHP.svg?branch=master)](https://travis-ci.org/HackThisSite/Ostiary-Client-PHP)
+[![Dependency Status](https://www.versioneye.com/user/projects/5aedd7f40fb24f54307a4767/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/5aedd7f40fb24f54307a4767)
+
 **Note**: This library can be used stand-alone from an [Ostiary server](https://github.com/HackThisSite/Ostiary), or can directly interact with the Redis backend of an Ostiary server. However, doing this grants full access to the Redis backend and circumvents the access controls the Ostiary server provides.
 
 ## Installation
