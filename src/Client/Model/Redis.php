@@ -63,7 +63,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function createSession(int $ttl, $bucket_global, $bucket_local) {
+  public function createSession($ttl, $bucket_global, $bucket_local) {
     if ($ttl < 0) $ttl = 0;
     // Try 5 times to find a unique UUID for this session (should always happen on first try)
     $uuid = null;
@@ -130,7 +130,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function getSession(string $jwt, bool $update_expiration, int $ttl) {
+  public function getSession($jwt, $update_expiration, $ttl) {
     if ($ttl < 0) $ttl = 0;
     // Extract UUID from JWT
     $uuid = $this->_extractUUIDFromJWT($jwt);
@@ -176,7 +176,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function getAllSessions(bool $count_only, bool $update_expiration, int $ttl) {
+  public function getAllSessions($count_only, $update_expiration, $ttl) {
     if ($ttl < 0) $ttl = 0;
     // Get all Redis keys
     $keys = $this->redis->keys('*');
@@ -267,7 +267,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function setBucket(string $jwt, string $bucket, $data, bool $update_expiration, int $ttl) {
+  public function setBucket($jwt, $bucket, $data, $update_expiration, $ttl) {
     // Extract UUID from JWT
     $uuid = $this->_extractUUIDFromJWT($jwt);
     if (empty($uuid)) return false;

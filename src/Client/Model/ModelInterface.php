@@ -19,7 +19,7 @@ interface ModelInterface {
    * @return bool|\Ostiary\Session A populated Ostiary\Session object, or false on failure
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
-  public function createSession(int $ttl, $bucket_global, $bucket_local);
+  public function createSession($ttl, $bucket_global, $bucket_local);
 
   /**
    * Get a session by JWT
@@ -32,7 +32,7 @@ interface ModelInterface {
    * @return \Ostiary\Session A populated Ostiary\Session object
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
-  public function getSession(string $jwt, bool $update_expiration, int $ttl);
+  public function getSession($jwt, $update_expiration, $ttl);
 
 
   /**
@@ -46,7 +46,7 @@ interface ModelInterface {
    * @return int|array If $count_only is true, will return an integer count, otherwise an array of Ostiary\Session objects with their UUIDs as array indices.
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
-  public function getAllSessions(bool $count_only, bool $update_expiration, int $ttl);
+  public function getAllSessions($count_only, $update_expiration, $ttl);
 
 
   /**
@@ -72,7 +72,7 @@ interface ModelInterface {
    * @return bool|\Ostiary\Session An updated Ostiary\Session object, or false on failure
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
-  public function setBucket(string $jwt, string $bucket, $data, bool $update_expiration, int $ttl);
+  public function setBucket($jwt, $bucket, $data, $update_expiration, $ttl);
 
 
   /**

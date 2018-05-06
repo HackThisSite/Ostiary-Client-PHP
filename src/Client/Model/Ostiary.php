@@ -37,7 +37,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function createSession(int $ttl, $bucket_global, $bucket_local) {
+  public function createSession($ttl, $bucket_global, $bucket_local) {
     $body = json_encode(array(
       'ttl' => $ttl,
       'bkt' => array(
@@ -61,7 +61,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function getSession(string $jwt, bool $update_expiration, int $ttl) {
+  public function getSession($jwt, $update_expiration, $ttl) {
     $request = $this->guzzle->get('/v1/getSession', array(), array(
       'query' => array(
         'jwt' => $jwt,
@@ -82,7 +82,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function getAllSessions(bool $count_only, bool $update_expiration, int $ttl) {
+  public function getAllSessions($count_only, $update_expiration, $ttl) {
     $request = $this->guzzle->get('/v1/getAllSessions', array(), array(
       'query' => array(
         'cnt' => ($count_only ? 1 : 0),
@@ -132,7 +132,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function setBucket(string $jwt, string $bucket, $data, bool $update_expiration, int $ttl) {
+  public function setBucket($jwt, $bucket, $data, $update_expiration, $ttl) {
     $body = json_encode(array(
       'jwt' => $jwt,
       'bkt' => ($bucket == 'global' ? 'glb' : 'loc'),
