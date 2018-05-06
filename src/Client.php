@@ -308,7 +308,7 @@ class Client {
   /**
    * Update the expiration of a Session to now + TTL (stored value or overridden)
    *
-   * @param $jwt JSON Web Token identifier of the session
+   * @param string $jwt JSON Web Token identifier of the session
    * @param array $options [optional] Array of optional settings. Allowed key/values:
    *    ttl  (int)   Override the TTL value for this Ostiary client. Default: undefined
    * @return \Ostiary\Session An updated Ostiary\Session object

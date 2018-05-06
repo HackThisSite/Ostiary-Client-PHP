@@ -379,7 +379,7 @@ TTL using the `setTTL()` method.
 **Description**
 
 ```php
-public touchSession ( $jwt, array $options)
+public touchSession (string $jwt, array $options)
 ```
 
 Update the expiration of a Session to now + TTL (stored value or overridden) 
@@ -388,7 +388,7 @@ Update the expiration of a Session to now + TTL (stored value or overridden)
 
 **Parameters**
 
-* `() $jwt`
+* `(string) $jwt`
 : JSON Web Token identifier of the session  
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
