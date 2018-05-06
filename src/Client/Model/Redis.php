@@ -358,7 +358,7 @@ class Redis implements ModelInterface {
     if (!hash_equals($jwt_decoded['sid'], $uuid)) return null;
 
     // Delete record
-    return $this->redis->delete($uuid);
+    return $this->redis->del($uuid);
   }
 
 
