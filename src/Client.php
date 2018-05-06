@@ -5,7 +5,7 @@
 
 namespace Ostiary;
 
-define('OSTIARY_VERSION', '0.1.0');
+define('OSTIARY_VERSION', '0.1.1');
 if (getenv('OSTIARY_DEBUG') && !defined('OSTIARY_DEBUG')) {
   define('OSTIARY_DEBUG', true);
 }
@@ -34,15 +34,24 @@ class Client {
         'timeout' => 3,
       ),
     ),
+    'createSession' => array(
+      'ttl' => -1,
+    ),
     'getSession' => array(
       'update_expiration' => true,
+      'ttl' => -1,
     ),
     'getAllSessions' => array(
       'update_expiration' => false,
+      'ttl' => -1,
       'count_only' => false,
     ),
     'setBucket' => array(
       'update_expiration' => true,
+      'ttl' => -1,
+    ),
+    'touchSession' => array(
+      'ttl' => -1,
     ),
   );
 
@@ -74,6 +83,8 @@ class Client {
       $this->setDebugCallback($debug_callback);
     }
 
+    Util::debug('Instantiating Ostiary\Client'.($debug_callback ? ' with debug callback' : ''));
+
     // Validate options
     try {
       $this->options = $this->_validateAndMergeOptions($options);
@@ -87,8 +98,6 @@ class Client {
     } else {
       $this->driver = new OstiaryDriver($this->options);
     }
-
-    Util::debug('Ostiary\Client instantiated'.($debug_callback ? ' with debug callback' : ''));
   }
 
 
@@ -126,12 +135,14 @@ class Client {
    *
    * @param array $bucket_data [optional] Array of bucket data. Allowed indices: "global" and "local"
    * @param array $options [optional] Array of optional settings. Allowed key/values:
-   *    ttl  (int)   Override the TTL value for this Ostiary client. Default: undefined
+   *    ttl  (int)   Override the TTL value for this Ostiary client. Default: -1
+   *       Allowed values: -1 = use TTL setting for this client, 0 = never expire, >0 = expire in X seconds
    * @return bool|\Ostiary\Session A populated Ostiary\Session object, or false on failure
    * @throws InvalidArgumentException Thrown if $bucket_data is not an array or if $options is invalid
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function createSession($bucket_data = array(), $options = array()) {
+    Util::debug('createSession called');
     // Validate options
     $opts = array();
     try {
@@ -141,7 +152,7 @@ class Client {
     }
 
     // Set TTL
-    $ttl = (isset($opts['ttl']) ? $opts['ttl'] : $this->options['ttl']);
+    $ttl = ($opts['ttl'] < 0 ? $this->options['ttl'] : $opts['ttl']);
 
     // Validate and set buckets
     if (!is_array($bucket_data)) {
@@ -150,6 +161,8 @@ class Client {
     }
     $bkt_global = (isset($bucket_data['global']) ? $bucket_data['global'] : null);
     $bkt_local = (isset($bucket_data['local']) ? $bucket_data['local'] : null);
+
+    Util::debug('Creating session with TTL of '.$ttl);
 
     // Create and return an Ostiary\Session
     return $this->driver->createSession($ttl, $bkt_global, $bkt_local);
@@ -162,7 +175,9 @@ class Client {
    * @param string $jwt JSON Web Token identifier of the session
    * @param array $options [optional] Array of optional settings. Allowed key/values:
    *    update_expiration  (bool)   Update the expiration time of a session to now + TTL (stored TTL or overridden). Default: true
-   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined
+   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1
+   *       Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds
+   *       Setting ttl >= 0 will update the TTL setting on record to match this.
    * @return null|\Ostiary\Session A populated Ostiary\Session object, or null on failure
    * @throws InvalidArgumentException Thrown if $bucket_data is not an array or if $options is invalid
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
@@ -176,18 +191,8 @@ class Client {
       throw new \InvalidArgumentException('Invalid options: '.$e->getMessage());
     }
 
-    // Set expiration update flag/TTL
-    $update_expiration = 0;
-    if ($opts['update_expiration']) {
-      if (isset($opts['ttl'])) {
-        $update_expiration = $opts['ttl'];
-      }
-    } else {
-      $update_expiration = -1;
-    }
-
     // Get the session and return an Ostiary\Session
-    return $this->driver->getSession($jwt, $update_expiration);
+    return $this->driver->getSession($jwt, $opts['update_expiration'], $opts['ttl']);
   }
 
 
@@ -197,7 +202,9 @@ class Client {
    * @param string $cookie_name Name of the cookie
    * @param array $options [optional] Array of optional settings. Allowed key/values:
    *    update_expiration  (bool)   Update the expiration time of a session to now + TTL (stored TTL or overridden). Default: true
-   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined
+   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1
+   *       Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds
+   *       Setting ttl >= 0 will update the TTL setting on record to match this.
    * @return null|\Ostiary\Session A populated Ostiary\Session object, or null on failure
    * @throws InvalidArgumentException Thrown if specified cookie doesn't exist or if $options is invalid
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
@@ -212,9 +219,11 @@ class Client {
    * Get all sessions in Ostiary
    *
    * @param array $options [optional] Array of optional settings. Allowed key/values:
-   *    update_expiration  (bool)   Update the expiration time of all sessions to now + TTL (stored TTL or overridden). Warning: This can be a very heavy operation! Default: false
-   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined
    *    count_only (bool)   Only give the count of sessions, not full details. Default: false
+   *    update_expiration  (bool)   Update the expiration time of all sessions to now + TTL (stored TTL or overridden). Warning: This can be a very heavy operation! Default: false
+   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1
+   *       Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds
+   *       Setting ttl >= 0 will update the TTL setting on record to match this.
    * @return int|array If `count_only` is true, will return an integer count, otherwise an array of Ostiary\Session objects with their UUIDs as array indices.
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
@@ -227,18 +236,8 @@ class Client {
       throw new \InvalidArgumentException('Invalid options: '.$e->getMessage());
     }
 
-    // Set expiration update flag/TTL
-    $update_expiration = 0;
-    if ($opts['update_expiration']) {
-      if (isset($opts['ttl'])) {
-        $update_expiration = $opts['ttl'];
-      }
-    } else {
-      $update_expiration = -1;
-    }
-
     // Get all sessions and return the count or an array of Ostiary\Session
-    return $this->driver->getAllSessions($opts['count_only'], $update_expiration);
+    return $this->driver->getAllSessions($opts['count_only'], $opts['update_expiration'], $opts['ttl']);
   }
 
 
@@ -275,7 +274,9 @@ class Client {
    * @param mixed $data Data to set for the bucket
    * @param array $options [optional] Array of optional settings. Allowed key/values:
    *    update_expiration  (bool)   Update the expiration time of a session to now + TTL (stored TTL or overridden). Default: true
-   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined
+   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1
+   *       Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds
+   *       Setting ttl >= 0 will update the TTL setting on record to match this.
    * @return bool|\Ostiary\Session An updated Ostiary\Session object, or false on failure
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
@@ -290,18 +291,8 @@ class Client {
       throw new \InvalidArgumentException('Invalid options: '.$e->getMessage());
     }
 
-    // Set expiration update flag/TTL
-    $update_expiration = 0;
-    if ($opts['update_expiration']) {
-      if (isset($opts['ttl'])) {
-        $update_expiration = $opts['ttl'];
-      }
-    } else {
-      $update_expiration = -1;
-    }
-
     // Set the bucket and return an Ostiary\Session object
-    return $this->driver->setBucket($jwt, $bucket, $data, $update_expiration);
+    return $this->driver->setBucket($jwt, $bucket, $data, $opts['update_expiration'], $opts['ttl']);
   }
 
 
@@ -310,7 +301,9 @@ class Client {
    *
    * @param string $jwt JSON Web Token identifier of the session
    * @param array $options [optional] Array of optional settings. Allowed key/values:
-   *    ttl  (int)   Override the TTL value for this Ostiary client. Default: undefined
+   *    ttl  (int)   Override the TTL value for this Ostiary client. Default: -1
+   *       Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds
+   *       Setting ttl >= 0 will update the TTL setting on record to match this.
    * @return \Ostiary\Session An updated Ostiary\Session object
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
@@ -323,11 +316,8 @@ class Client {
       throw new \InvalidArgumentException('Invalid options: '.$e->getMessage());
     }
 
-    // Set overriding TTL, or 0 to use TTL on record
-    $ttl = (isset($opts['ttl']) ? $opts['ttl'] : 0);
-
     // Touch session and return updated Ostiary\Session object
-    return $this->driver->touchSession($jwt, $ttl);
+    return $this->driver->touchSession($jwt, $opts['ttl']);
   }
 
 
@@ -371,13 +361,11 @@ class Client {
     //
     if ($function == '__construct') {
 
-      if (empty($opts['id']))
-        throw new \InvalidArgumentException('id must be set');
-      if (!preg_match('/^[a-z0-9._-]+$/i', $opts['id']))
-        throw new \InvalidArgumentException('id must contain only letters, numbers, dots, dashes, and underscores');
+      if (empty($opts['id']) || !preg_match('/^[a-z0-9._-]+$/i', $opts['id']))
+        throw new \InvalidArgumentException('id must be set and contain only letters, numbers, dots, dashes, or underscores');
 
-      if (!is_int($opts['ttl']))
-        throw new \InvalidArgumentException('ttl must be an integer');
+      if (!is_int($opts['ttl']) || $opts['ttl'] < 0)
+        throw new \InvalidArgumentException('ttl must be a positive integer >= 0');
 
       if (empty($opts['driver']) || !in_array($opts['driver'], array('ostiary', 'redis')))
         throw new \InvalidArgumentException('driver must be set to only: ostiary, redis');
@@ -406,7 +394,7 @@ class Client {
     //
     } elseif ($function == 'createSession') {
 
-      if (isset($opts['ttl']) && !is_int($opts['ttl']))
+      if (!isset($opts['ttl']) || !is_int($opts['ttl']))
         throw new \InvalidArgumentException('ttl must be an integer');
 
     //
@@ -414,10 +402,10 @@ class Client {
     //
     } elseif ($function == 'getSession') {
 
-      if (isset($opts['update_expiration']) && !is_bool($opts['update_expiration']))
+      if (!isset($opts['update_expiration']) || !is_bool($opts['update_expiration']))
         throw new \InvalidArgumentException('update_expiration must be a boolean');
 
-      if (isset($opts['ttl']) && !is_int($opts['ttl']))
+      if (!isset($opts['ttl']) || !is_int($opts['ttl']))
         throw new \InvalidArgumentException('ttl must be an integer');
 
     //
@@ -425,13 +413,13 @@ class Client {
     //
     } elseif ($function == 'getAllSessions') {
 
-      if (isset($opts['update_expiration']) && !is_bool($opts['update_expiration']))
+      if (!isset($opts['update_expiration']) || !is_bool($opts['update_expiration']))
         throw new \InvalidArgumentException('update_expiration must be a boolean');
 
-      if (isset($opts['ttl']) && !is_int($opts['ttl']))
+      if (!isset($opts['ttl']) || !is_int($opts['ttl']))
         throw new \InvalidArgumentException('ttl must be an integer');
 
-      if (isset($opts['count_only']) && !is_bool($opts['count_only']))
+      if (!isset($opts['count_only']) || !is_bool($opts['count_only']))
         throw new \InvalidArgumentException('count_only must be a boolean');
 
     //
@@ -439,10 +427,10 @@ class Client {
     //
     } elseif ($function == 'setBucket') {
 
-      if (isset($opts['update_expiration']) && !is_bool($opts['update_expiration']))
+      if (!isset($opts['update_expiration']) || !is_bool($opts['update_expiration']))
         throw new \InvalidArgumentException('update_expiration must be a boolean');
 
-      if (isset($opts['ttl']) && !is_int($opts['ttl']))
+      if (!isset($opts['ttl']) || !is_int($opts['ttl']))
         throw new \InvalidArgumentException('ttl must be an integer');
 
     //
@@ -450,7 +438,7 @@ class Client {
     //
     } elseif ($function == 'touchSession') {
 
-      if (isset($opts['ttl']) && !is_int($opts['ttl']))
+      if (!isset($opts['ttl']) || !is_int($opts['ttl']))
         throw new \InvalidArgumentException('ttl must be an integer');
 
     }

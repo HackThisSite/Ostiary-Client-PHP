@@ -14,6 +14,7 @@ class Ostiary implements ModelInterface {
 
 
   public function __construct($options) {
+    Util::debug('Instantiating Ostiary\Client\Model\Ostiary');
     $this->options = $options;
     // Create Guzzle object
     $this->guzzle = new Guzzle(array(
@@ -36,7 +37,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function createSession($ttl, $bucket_global, $bucket_local) {
+  public function createSession(int $ttl, $bucket_global, $bucket_local) {
     $body = json_encode(array(
       'ttl' => $ttl,
       'bkt' => array(
@@ -60,11 +61,12 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function getSession($jwt, $update_expiration) {
+  public function getSession(string $jwt, bool $update_expiration, int $ttl) {
     $request = $this->guzzle->get('/v1/getSession', array(), array(
       'query' => array(
         'jwt' => $jwt,
-        'tch' => $update_expiration,
+        'tch' => ($update_expiration ? 1 : 0),
+        'ttl' => $ttl,
       ),
     ));
 
@@ -80,11 +82,12 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function getAllSessions($count_only, $update_expiration) {
+  public function getAllSessions(bool $count_only, bool $update_expiration, int $ttl) {
     $request = $this->guzzle->get('/v1/getAllSessions', array(), array(
       'query' => array(
         'cnt' => ($count_only ? 1 : 0),
-        'tch' => $update_expiration,
+        'tch' => ($update_expiration ? 1 : 0),
+        'ttl' => $ttl,
       ),
     ));
 
@@ -106,7 +109,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function setSession($session) {
+  public function setSession(Ostiary\Session $session) {
     $body = json_encode(array(
      'sid' => $session->getSessionID(),
      'str' => $session->getTimeStarted(),
@@ -129,12 +132,13 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function setBucket($jwt, $bucket, $data, $update_expiration) {
+  public function setBucket(string $jwt, string $bucket, $data, bool $update_expiration, int $ttl) {
     $body = json_encode(array(
       'jwt' => $jwt,
       'bkt' => ($bucket == 'global' ? 'glb' : 'loc'),
       'dat' => $data,
-      'tch' => $update_expiration,
+      'tch' => ($update_expiration ? 1 : 0),
+      'ttl' => $ttl,
     ));
 
     $request = $this->guzzle->put('/v1/setBucket');

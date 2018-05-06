@@ -17,10 +17,14 @@ class Utilities {
    */
   public static function debug($message) {
     if (!defined('OSTIARY_DEBUG')) return false;
+    $dbt = debug_backtrace();
+    $msg = sprintf('[%s::%s] %s', $dbt[1]['class'], $dbt[1]['function'], $message);
     if (!empty(static::$debug_callback) && is_callable(static::$debug_callback)) {
-      return call_user_func(static::$debug_callback, $message);
+      return call_user_func(static::$debug_callback, $msg);
     } else {
-      printf("[%s] %s\n", date('r'), $message);
+      $ms = explode('.', microtime(true));
+      $ts = str_replace('%', $ms[1], date('D, d M Y H:i:s.% O', $ms[0]));
+      printf("[%s] %s\n", $ts, $msg);
     }
     return true;
   }

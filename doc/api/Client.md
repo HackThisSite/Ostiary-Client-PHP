@@ -73,7 +73,8 @@ Create a new Ostiary session
 : [optional] Array of bucket data. Allowed indices: "global" and "local"  
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
-   ttl  (int)   Override the TTL value for this Ostiary client. Default: undefined  
+   ttl  (int)   Override the TTL value for this Ostiary client. Default: -1  
+      Allowed values: -1 = use TTL setting for this client, 0 = never expire, >0 = expire in X seconds  
 
 **Return Values**
 
@@ -141,9 +142,11 @@ Get all sessions in Ostiary
 
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
-   update_expiration  (bool)   Update the expiration time of all sessions to now + TTL (stored TTL or overridden). Warning: This can be a very heavy operation! Default: false  
-   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined  
    count_only (bool)   Only give the count of sessions, not full details. Default: false  
+   update_expiration  (bool)   Update the expiration time of all sessions to now + TTL (stored TTL or overridden). Warning: This can be a very heavy operation! Default: false  
+   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1  
+      Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds  
+      Setting ttl >= 0 will update the TTL setting on record to match this.  
 
 **Return Values**
 
@@ -205,7 +208,9 @@ Get an Ostiary session by the JSON Web Token identifier
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
    update_expiration  (bool)   Update the expiration time of a session to now + TTL (stored TTL or overridden). Default: true  
-   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined  
+   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1  
+      Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds  
+      Setting ttl >= 0 will update the TTL setting on record to match this.  
 
 **Return Values**
 
@@ -244,7 +249,9 @@ Get an Ostiary session by the contents of a cookie
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
    update_expiration  (bool)   Update the expiration time of a session to now + TTL (stored TTL or overridden). Default: true  
-   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined  
+   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1  
+      Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds  
+      Setting ttl >= 0 will update the TTL setting on record to match this.  
 
 **Return Values**
 
@@ -287,7 +294,9 @@ Warning: This will overwrite all existing contents of the specified bucket in Os
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
    update_expiration  (bool)   Update the expiration time of a session to now + TTL (stored TTL or overridden). Default: true  
-   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined  
+   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: -1  
+      Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds  
+      Setting ttl >= 0 will update the TTL setting on record to match this.  
 
 **Return Values**
 
@@ -392,7 +401,9 @@ Update the expiration of a Session to now + TTL (stored value or overridden)
 : JSON Web Token identifier of the session  
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
-   ttl  (int)   Override the TTL value for this Ostiary client. Default: undefined  
+   ttl  (int)   Override the TTL value for this Ostiary client. Default: -1  
+      Values: -1 = use TTL on record, 0 = never expire, >0 = expire in X seconds  
+      Setting ttl >= 0 will update the TTL setting on record to match this.  
 
 **Return Values**
 

@@ -52,6 +52,7 @@ class Redis implements ModelInterface {
 
 
   public function __construct($options) {
+    Util::debug('Instantiating Ostiary\Client\Model\Redis');
     $this->options = $options;
     $this->redis = new Predis($this->options['redis']);
   }
@@ -62,7 +63,8 @@ class Redis implements ModelInterface {
   }
 
 
-  public function createSession($ttl, $bucket_global, $bucket_local) {
+  public function createSession(int $ttl, $bucket_global, $bucket_local) {
+    if ($ttl < 0) $ttl = 0;
     // Try 5 times to find a unique UUID for this session (should always happen on first try)
     $uuid = null;
     $iter = 0;
@@ -91,11 +93,12 @@ class Redis implements ModelInterface {
 
     // Prep data for Redis
     $time = intval(gmdate('U'));
+    $exp = ($ttl == 0 ? 0 : $time + $ttl);
     $redis_data = array(
       'sid' => $uuid,
       'key' => $key,
       'str' => $time,
-      'exp' => $time + $ttl,
+      'exp' => $exp,
       'ttl' => $ttl,
       'bkt' => array(
         'glb' => $bucket_global,
@@ -114,7 +117,7 @@ class Redis implements ModelInterface {
       $uuid,
       $jwt,
       $time,
-      $time + $ttl,
+      $exp,
       $ttl,
       array(
         'global' => $bucket_global,
@@ -127,7 +130,8 @@ class Redis implements ModelInterface {
   }
 
 
-  public function getSession($jwt, $update_expiration) {
+  public function getSession(string $jwt, bool $update_expiration, int $ttl) {
+    if ($ttl < 0) $ttl = 0;
     // Extract UUID from JWT
     $uuid = $this->_extractUUIDFromJWT($jwt);
     if (empty($uuid)) return null;
@@ -145,13 +149,13 @@ class Redis implements ModelInterface {
     if (!hash_equals($jwt_decoded['sid'], $uuid)) return null;
 
     // Bump Redis expiration, if set
-    if ($update_expiration >= 0) {
-      $ttl = ($update_expiration > 0 ? $update_expiration : $r_json['ttl']);
+    if ($update_expiration) {
+      $new_ttl = ($ttl < 0 ? $r_json['ttl'] : $ttl);
       $time = intval(gmdate('U'));
-      $jwt = $this->_generateJWT($uuid, $ttl, $r_json['key']);
-      $r_json['exp'] = $time + $ttl;
-      $r_json['ttl'] = $ttl;
-      $this->redis->setex($uuid, $ttl, json_encode($r_json));
+      $jwt = $this->_generateJWT($uuid, $new_ttl, $r_json['key']);
+      $r_json['exp'] = $time + $new_ttl;
+      $r_json['ttl'] = $new_ttl;
+      $this->redis->setex($uuid, $new_ttl, json_encode($r_json));
     }
 
     // Create Ostiary\Session object
@@ -172,12 +176,13 @@ class Redis implements ModelInterface {
   }
 
 
-  public function getAllSessions($count_only, $update_expiration) {
+  public function getAllSessions(bool $count_only, bool $update_expiration, int $ttl) {
+    if ($ttl < 0) $ttl = 0;
     // Get all Redis keys
     $keys = $this->redis->keys('*');
 
     // Returning count only with no expiration bump
-    if ($count_only && $update_expiration < 0) {
+    if ($count_only && !$update_expiration) {
       return count($keys);
     }
 
@@ -195,13 +200,13 @@ class Redis implements ModelInterface {
       $bkt_local = (isset($r_json['bkt']['loc'][$this->options['id']]) ? $r_json['bkt']['loc'][$this->options['id']] : null);
 
       // Bump expiration
-      if ($update_expiration >= 0) {
-        $ttl = ($update_expiration > 0 ? $update_expiration : $r_json['ttl']);
+      if ($update_expiration) {
+        $new_ttl = ($ttl < 0 ? $r_json['ttl'] : $ttl);
         $time = intval(gmdate('U'));
-        $jwt = $this->_generateJWT($r_json['sid'], $ttl, $r_json['key']);
-        $r_json['exp'] = $time + $ttl;
-        $r_json['ttl'] = $ttl;
-        $this->redis->setex($r_json['sid'], $ttl, json_encode($r_json));
+        $jwt = $this->_generateJWT($r_json['sid'], $new_ttl, $r_json['key']);
+        $r_json['exp'] = ($new_ttl == 0 ? 0 :$time + $new_ttl);
+        $r_json['ttl'] = $new_ttl;
+        $this->redis->setex($r_json['sid'], $new_ttl, json_encode($r_json));
       }
 
       // Generate Ostiary\Session object
@@ -223,7 +228,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function setSession($session) {
+  public function setSession(Ostiary\Session $session) {
     // Get key from Redis
     $r_data = $this->redis->get($session->getSessionID());
     if (empty($r_data)) return false;
@@ -262,7 +267,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function setBucket($jwt, $bucket, $data, $update_expiration) {
+  public function setBucket(string $jwt, string $bucket, $data, bool $update_expiration, int $ttl) {
     // Extract UUID from JWT
     $uuid = $this->_extractUUIDFromJWT($jwt);
     if (empty($uuid)) return false;
@@ -279,11 +284,11 @@ class Redis implements ModelInterface {
     if (!hash_equals($jwt_decoded['sid'], $uuid)) return null;
 
     // Bump Redis expiration, if set
-    if ($update_expiration >= 0) {
-      $new_ttl = ($update_expiration > 0 ? $update_expiration : $r_json['ttl']);
+    if ($update_expiration) {
+      $new_ttl = ($ttl < 0 ? $r_json['ttl'] : $ttl);
       $time = intval(gmdate('U'));
       $jwt = $this->_generateJWT($uuid, $new_ttl, $r_json['key']);
-      $r_json['exp'] = $time + $new_ttl;
+      $r_json['exp'] = ($new_ttl == 0 ? 0 : $time + $new_ttl);
       $r_json['ttl'] = $new_ttl;
     }
 
@@ -296,7 +301,7 @@ class Redis implements ModelInterface {
     $json = json_encode($r_json);
 
     // Insert into Redis
-    if ($update_expiration >= 0) {
+    if ($update_expiration) {
      $this->redis->setex($uuid, $r_json['ttl'], $json);
     } else {
      $this->redis->set($uuid, $json);
@@ -322,7 +327,7 @@ class Redis implements ModelInterface {
 
 
   public function touchSession($jwt, $ttl) {
-    return $this->getSession($jwt, $ttl);
+    return $this->getSession($jwt, true, $ttl);
   }
 
 
