@@ -24,7 +24,7 @@ $ostiary = new \Ostiary\Client(array(
   'id' => 'client-id',
 ));
 
-// Create a session
+// Create a session and write it to a cookie
 $data_buckets = array(
   'global' => array(
     'username' => 'foobar',
@@ -32,6 +32,7 @@ $data_buckets = array(
   ),
 );
 $session = $ostiary->createSession($data_buckets);
+$session->setCookie('cookie_name');
 
 // Get a session
 $session = $ostiary->getSession($json_web_token);

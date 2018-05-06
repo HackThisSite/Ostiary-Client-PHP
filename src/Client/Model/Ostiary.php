@@ -80,6 +80,32 @@ class Ostiary implements ModelInterface {
   }
 
 
+  public function getAllSessions($count_only, $update_expiration) {
+    $request = $this->guzzle->get('/v1/getAllSessions', array(), array(
+      'query' => array(
+        'cnt' => ($count_only ? 1 : 0),
+        'tch' => $update_expiration,
+      ),
+    ));
+
+    // Process request and get JSON
+    $json = $this->_processRequest($request);
+    if ($json['res'] != 'ok') return null;
+
+    // Return count only
+    if ($count_only) {
+      return $json['cnt'];
+    }
+
+    // Return sessions array
+    $sessions = array();
+    foreach ($json['sar'] as $sid => $sess) {
+      $sessions[$sid] = $this->_generateSessionObject($sess);
+    }
+    return $sessions;
+  }
+
+
   public function setSession($session) {
     $body = json_encode(array(
      'sid' => $session->getSessionID(),

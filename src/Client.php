@@ -37,6 +37,10 @@ class Client {
     'getSession' => array(
       'update_expiration' => true,
     ),
+    'getAllSessions' => array(
+      'update_expiration' => false,
+      'count_only' => false,
+    ),
     'setBucket' => array(
       'update_expiration' => true,
     ),
@@ -195,12 +199,46 @@ class Client {
    *    update_expiration  (bool)   Update the expiration time of a session to now + TTL (stored TTL or overridden). Default: true
    *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined
    * @return null|\Ostiary\Session A populated Ostiary\Session object, or null on failure
-   * @throws InvalidArgumentException Thrown if $bucket_data is not an array or if $options is invalid
+   * @throws InvalidArgumentException Thrown if specified cookie doesn't exist or if $options is invalid
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function getSessionFromCookie($cookie_name, $options = array()) {
     if (!isset($_COOKIE[$cookie_name])) return null;
     return $this->getSession($_COOKIE[$cookie_name], $options);
+  }
+
+
+  /**
+   * Get all sessions in Ostiary
+   *
+   * @param array $options [optional] Array of optional settings. Allowed key/values:
+   *    update_expiration  (bool)   Update the expiration time of all sessions to now + TTL (stored TTL or overridden). Warning: This can be a very heavy operation! Default: false
+   *    ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined
+   *    count_only (bool)   Only give the count of sessions, not full details. Default: false
+   * @return int|array If `count_only` is true, will return an integer count, otherwise an array of Ostiary\Session objects with their UUIDs as array indices.
+   * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
+   */
+  public function getAllSessions($options = array()) {
+    // Validate options
+    $opts = array();
+    try {
+      $opts = $this->_validateAndMergeOptions($options);
+    } catch (\InvalidArgumentException $e) {
+      throw new \InvalidArgumentException('Invalid options: '.$e->getMessage());
+    }
+
+    // Set expiration update flag/TTL
+    $update_expiration = 0;
+    if ($opts['update_expiration']) {
+      if (isset($opts['ttl'])) {
+        $update_expiration = $opts['ttl'];
+      }
+    } else {
+      $update_expiration = -1;
+    }
+
+    // Get all sessions and return the count or an array of Ostiary\Session
+    return $this->driver->getAllSessions($opts['count_only'], $update_expiration);
   }
 
 
@@ -353,8 +391,8 @@ class Client {
           throw new \InvalidArgumentException('ostiary settings must be set if driver = ostiary');
         if (empty($opts['ostiary']['server']))
           throw new \InvalidArgumentException('ostiary.server must be set to an Ostiary server endpoint');
-        if (empty($opts['ostiary']['timeout']) || !is_int($opts['ostiary']['timeout']))
-          throw new \InvalidArgumentException('ostiary.timeout must be an integer');
+        if (empty($opts['ostiary']['timeout']) || (!is_int($opts['ostiary']['timeout']) && !is_float($opts['ostiary']['timeout'])))
+          throw new \InvalidArgumentException('ostiary.timeout must be an integer or float');
 
       } elseif ($opts['driver'] == 'redis') {
 
@@ -381,6 +419,20 @@ class Client {
 
       if (isset($opts['ttl']) && !is_int($opts['ttl']))
         throw new \InvalidArgumentException('ttl must be an integer');
+
+    //
+    // getAllSessions
+    //
+    } elseif ($function == 'getAllSessions') {
+
+      if (isset($opts['update_expiration']) && !is_bool($opts['update_expiration']))
+        throw new \InvalidArgumentException('update_expiration must be a boolean');
+
+      if (isset($opts['ttl']) && !is_int($opts['ttl']))
+        throw new \InvalidArgumentException('ttl must be an integer');
+
+      if (isset($opts['count_only']) && !is_bool($opts['count_only']))
+        throw new \InvalidArgumentException('count_only must be a boolean');
 
     //
     // setBucket

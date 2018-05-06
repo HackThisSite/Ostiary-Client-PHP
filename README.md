@@ -7,6 +7,12 @@ This library provides a PHP client for the [Ostiary session manager](https://git
 
 **Note**: This library can be used stand-alone from an [Ostiary server](https://github.com/HackThisSite/Ostiary), or can directly interact with the Redis backend of an Ostiary server. However, doing this grants full access to the Redis backend and circumvents the access controls the Ostiary server provides.
 
+## Description
+
+[Ostiary](https://github.com/HackThisSite/Ostiary) is a simple session token manager that can be used for a variety of use cases, acting as an authenticated and authorized wrapper around a Redis store. Sessions are identified and validated using JSON Web Tokens, and scoped data buckets offer the additional ability to store session meta-data (such as username, email, timezone, etc.).
+
+This PHP client library is used to either interface with an Ostiary server, or work stand-alone.
+
 ## Installation
 
 Install this library using the [composer](https://getcomposer.org/) PHP package manager:

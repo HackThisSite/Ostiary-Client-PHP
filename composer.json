@@ -16,13 +16,14 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.5.0 || >=7.0",
         "ext-json": "*",
         "firebase/php-jwt": "^5.0",
         "guzzlehttp/guzzle": "^6.3",
+        "paragonie/random-lib": "^2.0",
         "predis/predis": "^1.1",
-        "siriusphp/validation": "^2.2",
-        "paragonie/random-lib": "^2.0"
+        "ramsey/uuid": "^3.7",
+        "siriusphp/validation": "^2.2"
     },
     "suggest": {
         "ext-redis": "*"

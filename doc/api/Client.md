@@ -13,6 +13,7 @@ Ostiary\Client interacts either directly with an Ostiary Redis environment, or w
 |[__construct](#client__construct)|Construct an Ostiary client.|
 |[createSession](#clientcreatesession)|Create a new Ostiary session|
 |[deleteSession](#clientdeletesession)|Delete an Ostiary session|
+|[getAllSessions](#clientgetallsessions)|Get all sessions in Ostiary|
 |[getDriver](#clientgetdriver)|Return the raw driver object in use.|
 |[getSession](#clientgetsession)|Get an Ostiary session by the JSON Web Token identifier|
 |[getSessionFromCookie](#clientgetsessionfromcookie)|Get an Ostiary session by the contents of a cookie|
@@ -124,6 +125,41 @@ Delete an Ostiary session
 > If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
 
 
+### Client::getAllSessions  
+
+**Description**
+
+```php
+public getAllSessions (array $options)
+```
+
+Get all sessions in Ostiary 
+
+ 
+
+**Parameters**
+
+* `(array) $options`
+: [optional] Array of optional settings. Allowed key/values:  
+   update_expiration  (bool)   Update the expiration time of all sessions to now + TTL (stored TTL or overridden). Warning: This can be a very heavy operation! Default: false  
+   ttl  (int)   Override the TTL value for this Ostiary client. Ignored if `update_expiration` is false. Default: undefined  
+   count_only (bool)   Only give the count of sessions, not full details. Default: false  
+
+**Return Values**
+
+`int|array`
+
+> If `count_only` is true, will return an integer count, otherwise an array of Ostiary\Session objects with their UUIDs as array indices.  
+
+
+
+**Throws Exceptions**
+
+
+`\Ostiary\Client\Exception\OstiaryServerException`
+> If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
+
+
 ### Client::getDriver  
 
 **Description**
@@ -222,7 +258,7 @@ Get an Ostiary session by the contents of a cookie
 
 
 `\InvalidArgumentException`
-> Thrown if $bucket_data is not an array or if $options is invalid
+> Thrown if specified cookie doesn't exist or if $options is invalid
 
 `\Ostiary\Client\Exception\OstiaryServerException`
 > If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server

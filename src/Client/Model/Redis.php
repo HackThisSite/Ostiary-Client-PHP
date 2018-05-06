@@ -2,6 +2,8 @@
 
 use \Firebase\JWT\JWT;
 use \Predis\Client as Predis;
+use \Ramsey\Uuid\Uuid;
+use \Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ostiary\Client\Utilities as Util;
 use Ostiary\Client\Model\ModelInterface;
 use Ostiary\Session;
@@ -65,7 +67,11 @@ class Redis implements ModelInterface {
     $uuid = null;
     $iter = 0;
     while (empty($uuid) && $iter < 5) {
-      $uuid_tmp = Util::gen_uuid_v4();
+      try {
+        $uuid_tmp = Uuid::uuid4()->toString();
+      } catch (UnsatisfiedDependencyException $e) {
+        throw new \RuntimeException('Error generating UUID: '.$e->getMessage());
+      }
       $exists = $this->redis->get($uuid_tmp);
       if (empty($exists)) {
         $uuid = $uuid_tmp;
@@ -163,6 +169,57 @@ class Redis implements ModelInterface {
 
     // Return Ostiary\Session object
     return $session;
+  }
+
+
+  public function getAllSessions($count_only, $update_expiration) {
+    // Get all Redis keys
+    $keys = $this->redis->keys('*');
+
+    // Returning count only with no expiration bump
+    if ($count_only && $update_expiration < 0) {
+      return count($keys);
+    }
+
+    // Generate Ostiay\Session objects for all keys, and optionally bump all expirations
+    $sessions = array();
+    foreach ($keys as $key) {
+      // Get Redis data for the key
+      $r_data = $this->redis->get($key);
+      $r_json = json_decode($redis_data, true);
+      if (empty($r_json)) {
+        Util::debug('Error on getAllSessions: Corrupted session: '.$key);
+        continue;
+      }
+      $jwt = $this->_generateJWT($r_json['sid'], $r_json['ttl'], $r_json['key']);
+      $bkt_local = (isset($r_json['bkt']['loc'][$this->options['id']]) ? $r_json['bkt']['loc'][$this->options['id']] : null);
+
+      // Bump expiration
+      if ($update_expiration >= 0) {
+        $ttl = ($update_expiration > 0 ? $update_expiration : $r_json['ttl']);
+        $time = intval(gmdate('U'));
+        $jwt = $this->_generateJWT($r_json['sid'], $ttl, $r_json['key']);
+        $r_json['exp'] = $time + $ttl;
+        $r_json['ttl'] = $ttl;
+        $this->redis->setex($r_json['sid'], $ttl, json_encode($r_json));
+      }
+
+      // Generate Ostiary\Session object
+      $sessions[$r_json['sid']] = new Session(
+        $r_json['sid'],
+        $jwt,
+        $r_json['str'],
+        $r_json['exp'],
+        $r_json['ttl'],
+        array(
+          'global' => $r_json['bkt']['glb'],
+          'local' => $bkt_local,
+        )
+      );
+    }
+
+    // Return sessions array
+    return $sessions;
   }
 
 
