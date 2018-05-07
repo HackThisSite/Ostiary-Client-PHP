@@ -183,6 +183,7 @@ class Client {
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function getSession($jwt, $options = array()) {
+    Util::debug('getSession called');
     // Validate options
     $opts = array();
     try {
@@ -210,6 +211,7 @@ class Client {
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function getSessionFromCookie($cookie_name, $options = array()) {
+    Util::debug('getSessionFromCookie called');
     if (!isset($_COOKIE[$cookie_name])) return null;
     return $this->getSession($_COOKIE[$cookie_name], $options);
   }
@@ -228,6 +230,7 @@ class Client {
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function getAllSessions($options = array()) {
+    Util::debug('getAllSessions called');
     // Validate options
     $opts = array();
     try {
@@ -255,6 +258,7 @@ class Client {
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function setSession(Ostiary\Session $session) {
+    Util::debug('setSession called');
     // Check that we received an Ostiary\Session object
     if (!is_a($session, 'Ostiary\Session'))
       throw new \InvalidArgumentException('session must be an Ostiary\Session object');
@@ -281,6 +285,7 @@ class Client {
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function setBucket($jwt, $bucket, $data, $options = array()) {
+    Util::debug('setBucket called');
     // Validate options
     if (!in_array($bucket, array('global', 'local')))
       throw new \InvalidArgumentException('bucket must be set to only "global" or "local"');
@@ -308,6 +313,7 @@ class Client {
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function touchSession($jwt, $options = array()) {
+    Util::debug('touchSession called');
     // Validate options
     $opts = array();
     try {
@@ -329,6 +335,7 @@ class Client {
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
   public function deleteSession($jwt) {
+    Util::debug('deleteSession called');
     return $this->driver->deleteSession($jwt);
   }
 
