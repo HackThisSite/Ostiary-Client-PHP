@@ -5,7 +5,7 @@
 
 namespace Ostiary;
 
-define('OSTIARY_VERSION', '0.1.1');
+define('OSTIARY_VERSION', '0.1.2');
 if (getenv('OSTIARY_DEBUG') && !defined('OSTIARY_DEBUG')) {
   define('OSTIARY_DEBUG', true);
 }
