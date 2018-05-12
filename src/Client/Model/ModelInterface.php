@@ -14,13 +14,14 @@ interface ModelInterface {
    * Create a session
    *
    * @param int $ttl Time To Live for this session
+   * @param string $ip_address IP address or hostname for this session
    * @param mixed $bucket_global Data for the global bucket
    * @param mixed $bucket_local Data for the local bucket for this client
    * @param null|\Ostiary\User An Ostiary\User object, or null
    * @return bool|\Ostiary\Session A populated Ostiary\Session object, or false on failure
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
-  public function createSession($ttl, $bucket_global, $bucket_local, $user);
+  public function createSession($ttl, $ip_address, $bucket_global, $bucket_local, $user);
 
   /**
    * Get a session by JWT

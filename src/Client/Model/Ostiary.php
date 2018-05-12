@@ -38,9 +38,10 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function createSession($ttl, $bucket_global, $bucket_local, $user) {
+  public function createSession($ttl, $ip_address, $bucket_global, $bucket_local, $user) {
     $body = json_encode(array(
       'ttl' => $ttl,
+      'ipa' => $ip_address,
       'bkt' => array(
         'glb' => $bucket_global,
         'loc' => $bucket_local,
@@ -117,6 +118,7 @@ class Ostiary implements ModelInterface {
      'str' => $session->getTimeStarted(),
      'exp' => $session->getTimeExpiration(),
      'ttl' => $session->getTTL(),
+     'ipa' => $session->getIPAddress(),
      'bkt' => array(
        'glb' => $session->getBucket('global'),
        'loc' => $session->getBucket('local'),
@@ -233,6 +235,7 @@ class Ostiary implements ModelInterface {
       $data['str'],
       $data['exp'],
       $data['ttl'],
+      $data['ipa'],
       array(
         'global' => $data['bkt']['glb'],
         'local' => $data['bkt']['loc'],

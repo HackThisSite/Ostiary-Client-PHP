@@ -42,6 +42,7 @@ class SessionTest extends TestCase {
     $this->assertEquals($time, $session->getTimeStarted());
     $this->assertEquals($time + $ttl, $session->getTimeExpiration());
     $this->assertEquals($ttl, $session->getTTL());
+    $this->assertEmpty($session->getIPAddress());
     $this->assertEmpty($session->getBucket('global'));
     $this->assertEmpty($session->getBucket('local'));
     $this->assertEmpty($session->getUser());

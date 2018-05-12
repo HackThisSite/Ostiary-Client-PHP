@@ -41,6 +41,12 @@ class Session {
   private $ttl;
 
   /**
+   * IP address or hostname
+   * @ignore
+   */
+  private $ip_address;
+
+  /**
    * Data buckets, global (accessible to all clients) and local (accessible only to this client)
    * @ignore
    */
@@ -64,18 +70,20 @@ class Session {
    * @param int $time_started Unix timestamp of when the session was started
    * @param int $time_expiration Unix timestamp of when the session will expire
    * @param int $ttl Time To Live in seconds for this session
+   * @param string|null $ip_address [optional] IP address for this session. Default: null
    * @param array $buckets [optional] Data buckets, global (accessible to all clients)
    *    and local (accessible only to this client). Array indices must be only
    *    "global" and "local". Values can be any data type allowed by json_encode().
    * @param Ostiary\User|null $user [optional] An Ostiary\User object, or null
    * @throws InvalidArgumentException Thrown if any param is invalid
    */
-  public function __construct($session_id, $jwt, $time_started, $time_expiration, $ttl, $buckets = array(), $user = null) {
+  public function __construct($session_id, $jwt, $time_started, $time_expiration, $ttl, $ip_address = null, $buckets = array(), $user = null) {
     $this->setSessionID($session_id);
     $this->setJWT($jwt);
     $this->setTimeStarted($time_started);
     $this->setTimeExpiration($time_expiration);
     $this->setTTL($ttl);
+    $this->setIPAddress($ip_address);
 
     if (!is_array($buckets))
       throw new \InvalidArgumentException('Buckets must be an array');
@@ -154,6 +162,31 @@ class Session {
       throw new \InvalidArgumentException('Invalid JWT syntax');
 
     $this->jwt = $jwt;
+    return true;
+  }
+
+
+  /**
+   * Get the IP address or hostname
+   *
+   * @return string IP address or hostname for this session, if defined
+   */
+  public function getIPAddress() {
+    return $this->ip_address;
+  }
+
+
+  /**
+   * Set an IP address for this session
+   *
+   * @param string $ip_address IP address or hostname to set for this session, or null to clear
+   * @return bool True on success, false on failure
+   * @throws InvalidArgumentException Thrown if the IP address or hostname is not null and fails a basic syntax check
+   */
+  public function setIPAddress($ip_address) {
+    if ($ip_address !== null && !filter_var($ip_address, FILTER_VALIDATE_IP) && !filter_var($ip_address, FILTER_VALIDATE_DOMAIN))
+      throw new \InvalidArgumentException('IP address must be a valid IPv4 or IPv6 address or hostname');
+    $this->ip_address = $ip_address;
     return true;
   }
 
@@ -324,6 +357,7 @@ class Session {
       'time_started'    => $this->time_started,
       'time_expiration' => $this->time_expiration,
       'ttl'             => $this->ttl,
+      'ip_address'      => $this->ip_address,
       'buckets'         => array(
         'global' => $this->buckets['global'],
         'local'  => $this->buckets['local'],

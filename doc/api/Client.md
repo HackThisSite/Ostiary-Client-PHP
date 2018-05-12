@@ -60,7 +60,7 @@ Construct an Ostiary client.
 **Description**
 
 ```php
-public createSession (array $bucket_data, \Ostiary\User|null $user, array $options)
+public createSession (array $values, array $options)
 ```
 
 Create a new Ostiary session 
@@ -69,10 +69,12 @@ Create a new Ostiary session
 
 **Parameters**
 
-* `(array) $bucket_data`
-: [optional] Array of bucket data. Allowed indices: "global" and "local". Default: empty array  
-* `(\Ostiary\User|null) $user`
-: [optional] An Ostiary\User object, or null. Default: null  
+* `(array) $values`
+: [optional] Array of values to set for this session. All values are optional. Allowed key/values:  
+   bucket_global   (mixed)   Value for the global bucket. Default: null  
+   bucket_local   (mixed)   Value for the bucket local to this client. Default: null  
+   ip_address   (string)   IP address or hostname for this session. Default: null  
+   user   Ostiary\User   An Ostiary\User object. Default: null  
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
    ttl  (int)   Override the TTL value for this Ostiary client. Default: -1  

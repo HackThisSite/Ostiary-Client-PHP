@@ -155,12 +155,18 @@ class Client {
       'ip_address' => null,
       'user' => null,
     );
+    // - is array
     if (!is_array($values))
       throw new \InvalidArgumentException('Values object must be an array');
     $vals = array_merge($default_values, $values);
     foreach ($values as $k => $v) {
+      // - key is valid
       if (!in_array($k, array_keys($default_values)))
         throw new \InvalidArgumentException('Unknown value type: '.$k);
+      // - ip_address is valid IP or hostname
+      if ($k == 'ip_address' && !filter_var($v, FILTER_VALIDATE_IP) && !filter_var($v, FILTER_VALIDATE_DOMAIN))
+        throw new \InvalidArgumentException('IP address must be a valid IPv4 or IPv6 address or hostname');
+      // - user is null or Ostiary\User
       if ($k == 'user' && $v !== null && !is_a($v, 'Ostiary\User'))
         throw new \InvalidArgumentException('User object must be null or an instance of Ostiary\User');
     }
@@ -179,7 +185,7 @@ class Client {
     Util::debug('Creating session with TTL of '.$ttl);
 
     // Create and return an Ostiary\Session
-    return $this->driver->createSession($ttl, $$vals['bucket_global'], $vals['bucket_local'], $user);
+    return $this->driver->createSession($ttl, $vals['ip_address'], $$vals['bucket_global'], $vals['bucket_local'], $user);
   }
 
 

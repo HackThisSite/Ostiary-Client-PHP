@@ -12,6 +12,7 @@ Ostiary\Session stores data for an Ostiary session
 |------|-------------|
 |[__construct](#session__construct)|Construct an Ostiary session.|
 |[getBucket](#sessiongetbucket)|Get the contents of a data bucket|
+|[getIPAddress](#sessiongetipaddress)|Get the IP address or hostname|
 |[getJWT](#sessiongetjwt)|Get the JSON Web Token of the session|
 |[getSessionID](#sessiongetsessionid)|Get the Session UUID|
 |[getTTL](#sessiongetttl)|Get the Time To Live (in seconds) for this session|
@@ -20,6 +21,7 @@ Ostiary\Session stores data for an Ostiary session
 |[getUser](#sessiongetuser)|Return an Ostiary\User for this session, if defined|
 |[setBucket](#sessionsetbucket)|Set the contents of a bucket|
 |[setCookie](#sessionsetcookie)|Write the JWT to a cookie|
+|[setIPAddress](#sessionsetipaddress)|Set an IP address for this session|
 |[setJWT](#sessionsetjwt)|Set the JSON Web Token of this session|
 |[setSessionID](#sessionsetsessionid)|Set the UUID of the session|
 |[setTTL](#sessionsetttl)|Set the Time To Live (in seconds) for this session|
@@ -38,7 +40,7 @@ Ostiary\Session stores data for an Ostiary session
 **Description**
 
 ```php
-public __construct (string $session_id, string $jwt, int $time_started, int $time_expiration, int $ttl, array $buckets, \Ostiary\User $user)
+public __construct (string $session_id, string $jwt, int $time_started, int $time_expiration, int $ttl, string|null $ip_address, array $buckets, \Ostiary\User|null $user)
 ```
 
 Construct an Ostiary session. 
@@ -57,12 +59,14 @@ Construct an Ostiary session.
 : Unix timestamp of when the session will expire  
 * `(int) $ttl`
 : Time To Live in seconds for this session  
+* `(string|null) $ip_address`
+: [optional] IP address for this session. Default: null  
 * `(array) $buckets`
-: Data buckets, global (accessible to all clients)  
+: [optional] Data buckets, global (accessible to all clients)  
    and local (accessible only to this client). Array indices must be only  
    "global" and "local". Values can be any data type allowed by json_encode().  
-* `(\Ostiary\User) $user`
-: [optional] An Ostiary\User object  
+* `(\Ostiary\User|null) $user`
+: [optional] An Ostiary\User object, or null  
 
 **Return Values**
 
@@ -97,6 +101,31 @@ Get the contents of a data bucket
 `mixed`
 
 > Contents of the specified data bucket  
+
+
+
+
+### Session::getIPAddress  
+
+**Description**
+
+```php
+public getIPAddress (void)
+```
+
+Get the IP address or hostname 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`string`
+
+> IP address or hostname for this session, if defined  
 
 
 
@@ -321,6 +350,38 @@ Write the JWT to a cookie
 > Result of PHP setcookie() function  
 
 
+
+
+### Session::setIPAddress  
+
+**Description**
+
+```php
+public setIPAddress (string $ip_address)
+```
+
+Set an IP address for this session 
+
+ 
+
+**Parameters**
+
+* `(string) $ip_address`
+: IP address or hostname to set for this session, or null to clear  
+
+**Return Values**
+
+`bool`
+
+> True on success, false on failure  
+
+
+
+**Throws Exceptions**
+
+
+`\InvalidArgumentException`
+> Thrown if the IP address or hostname is not null and fails a basic syntax check
 
 
 ### Session::setJWT  

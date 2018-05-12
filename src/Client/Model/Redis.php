@@ -64,7 +64,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function createSession($ttl, $bucket_global, $bucket_local, $user) {
+  public function createSession($ttl, $ip_address, $bucket_global, $bucket_local, $user) {
     // Try 5 times to find a unique UUID for this session (should always happen on first try)
     $uuid = null;
     $iter = 0;
@@ -104,6 +104,7 @@ class Redis implements ModelInterface {
       'str' => $time,
       'exp' => $exp,
       'ttl' => $ttl,
+      'ipa' => $ip_address,
       'bkt' => array(
         'glb' => $bucket_global,
         'loc' => array(
@@ -128,6 +129,7 @@ class Redis implements ModelInterface {
       $time,
       $exp,
       $ttl,
+      $ip_address,
       array(
         'global' => $bucket_global,
         'local' => $bucket_local,
@@ -178,6 +180,7 @@ class Redis implements ModelInterface {
       $r_json['str'],
       $r_json['exp'],
       $r_json['ttl'],
+      $r_json['ipa'],
       array(
         'global' => $r_json['bkt']['glb'],
         'local' => $bkt_local,
@@ -233,6 +236,7 @@ class Redis implements ModelInterface {
         $r_json['str'],
         $r_json['exp'],
         $r_json['ttl'],
+        $r_json['ipa'],
         array(
           'global' => $r_json['bkt']['glb'],
           'local' => $bkt_local,
@@ -268,6 +272,7 @@ class Redis implements ModelInterface {
      'str' => $session->getTimeStarted(),
      'exp' => $session->getTimeExpiration(),
      'ttl' => $session->getTTL(),
+     'ipa' => $session->getIPAddress(),
      'bkt' => array(
        'glb' => $session->getBucket('global'),
        'loc' => $r_json['bkt']['loc'],
@@ -337,6 +342,7 @@ class Redis implements ModelInterface {
       $r_json['str'],
       $r_json['exp'],
       $r_json['ttl'],
+      $r_json['ipa'],
       array(
         'global' => $r_json['bkt']['glb'],
         'local' => $bkt_local,
