@@ -64,19 +64,21 @@ class Session {
    * @param int $time_started Unix timestamp of when the session was started
    * @param int $time_expiration Unix timestamp of when the session will expire
    * @param int $ttl Time To Live in seconds for this session
-   * @param array $buckets Data buckets, global (accessible to all clients)
+   * @param array $buckets [optional] Data buckets, global (accessible to all clients)
    *    and local (accessible only to this client). Array indices must be only
    *    "global" and "local". Values can be any data type allowed by json_encode().
-   * @param Ostiary\User $user [optional] An Ostiary\User object
+   * @param Ostiary\User|null $user [optional] An Ostiary\User object, or null
    * @throws InvalidArgumentException Thrown if any param is invalid
    */
-  public function __construct($session_id, $jwt, $time_started, $time_expiration, $ttl, $buckets, \Ostiary\User $user = null) {
+  public function __construct($session_id, $jwt, $time_started, $time_expiration, $ttl, $buckets = array(), $user = null) {
     $this->setSessionID($session_id);
     $this->setJWT($jwt);
     $this->setTimeStarted($time_started);
     $this->setTimeExpiration($time_expiration);
     $this->setTTL($ttl);
 
+    if (!is_array($buckets))
+      throw new \InvalidArgumentException('Buckets must be an array');
     $bkt_glb = (isset($buckets['global']) ? $buckets['global'] : null);
     $bkt_loc = (isset($buckets['local']) ? $buckets['local'] : null);
     $this->setBucket('global', $bkt_glb);

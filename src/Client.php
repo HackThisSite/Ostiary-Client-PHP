@@ -136,7 +136,7 @@ class Client {
    * @param array $values [optional] Array of values to set for this session. All values are optional. Allowed key/values:
    *    bucket_global   (mixed)   Value for the global bucket. Default: null
    *    bucket_local   (mixed)   Value for the bucket local to this client. Default: null
-   *    ip_address   (string)   IP address for this session. Default: null
+   *    ip_address   (string)   IP address or hostname for this session. Default: null
    *    user   Ostiary\User   An Ostiary\User object. Default: null
    * @param array $options [optional] Array of optional settings. Allowed key/values:
    *    ttl  (int)   Override the TTL value for this Ostiary client. Default: -1
@@ -148,17 +148,22 @@ class Client {
   public function createSession($values = array(), $options = array()) {
     Util::debug('createSession called');
 
-    // 
+    // Validate and set values
     $default_values = array(
       'bucket_global' => null,
       'bucket_local' => null,
       'ip_address' => null,
       'user' => null,
     );
-
-    // Validate user
-    if ($user !== null && !is_a($user, 'Ostiary\User'))
-      throw new \InvalidArgumentException('User object must be null or an instance of Ostiary\User');
+    if (!is_array($values))
+      throw new \InvalidArgumentException('Values object must be an array');
+    $vals = array_merge($default_values, $values);
+    foreach ($values as $k => $v) {
+      if (!in_array($k, array_keys($default_values)))
+        throw new \InvalidArgumentException('Unknown value type: '.$k);
+      if ($k == 'user' && $v !== null && !is_a($v, 'Ostiary\User'))
+        throw new \InvalidArgumentException('User object must be null or an instance of Ostiary\User');
+    }
 
     // Validate options
     $opts = array();
@@ -171,18 +176,10 @@ class Client {
     // Set TTL
     $ttl = ($opts['ttl'] < 0 ? $this->options['ttl'] : $opts['ttl']);
 
-    // Validate and set buckets
-    if (!is_array($bucket_data)) {
-      throw new \InvalidArgumentException('Bucket data must be an array');
-      return false;
-    }
-    $bkt_global = (isset($bucket_data['global']) ? $bucket_data['global'] : null);
-    $bkt_local = (isset($bucket_data['local']) ? $bucket_data['local'] : null);
-
     Util::debug('Creating session with TTL of '.$ttl);
 
     // Create and return an Ostiary\Session
-    return $this->driver->createSession($ttl, $bkt_global, $bkt_local, $user);
+    return $this->driver->createSession($ttl, $$vals['bucket_global'], $vals['bucket_local'], $user);
   }
 
 

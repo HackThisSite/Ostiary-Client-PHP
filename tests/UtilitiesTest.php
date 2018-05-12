@@ -8,6 +8,9 @@ use Ostiary\Client\Utilities as Util;
  */
 class UtilitiesTest extends TestCase {
 
+  /**
+   * @group base
+   */
   public function testRandAlnum() {
     // Is 8 bytes
     $this->assertEquals(8, strlen(Util::rand_alnum(8)));
@@ -17,6 +20,9 @@ class UtilitiesTest extends TestCase {
     $this->assertRegExp('/^[a-zA-Z0-9]+$/', Util::rand_alnum(64, true));
   }
 
+  /**
+   * @group base
+   */
   public function testIsAlnum() {
     // Use ctype
     $this->assertTrue(Util::is_alnum('abc'));
@@ -32,11 +38,17 @@ class UtilitiesTest extends TestCase {
     $this->assertFalse(Util::is_alnum('abcABC-123', true));
   }
 
+  /**
+   * @group base
+   */
   public function testIsUrl() {
     $this->assertTrue(Util::is_url('http://localhost'));
     $this->assertFalse(Util::is_url('host'));
   }
 
+  /**
+   * @group base
+   */
   public function testIsEmail() {
     $this->assertTrue(Util::is_email('foo@bar.com'));
     $this->assertFalse(Util::is_url('email'));

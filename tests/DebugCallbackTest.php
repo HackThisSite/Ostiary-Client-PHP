@@ -6,9 +6,10 @@ use Ostiary\Client as OstiaryClient;
 /**
  * @covers \Ostiary\Client
  */
-class BasicTest extends TestCase {
+class DebugCallbackTest extends TestCase {
 
   /**
+   * @group base
    * @expectedException        InvalidArgumentException
    * @expectedExceptionMessage Debug callback is not callable
    */
@@ -21,8 +22,10 @@ class BasicTest extends TestCase {
       ), array(uniqid())));
   }
 
+  /**
+   * @group base
+   */
   public function testDebugCallbackOkay() {
-    define('OSTIARY_DEBUG', true);
     $ostiary = new OstiaryClient(array(
       'id' => 'test',
       'secret' => 'secret',
