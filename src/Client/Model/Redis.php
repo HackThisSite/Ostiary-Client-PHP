@@ -7,6 +7,7 @@ use \Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ostiary\Client\Utilities as Util;
 use Ostiary\Client\Model\ModelInterface;
 use Ostiary\Session;
+use Ostiary\User;
 use Ostiary\Client\Exception\ServerErrorException;
 
 /*
@@ -63,7 +64,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function createSession($ttl, $bucket_global, $bucket_local) {
+  public function createSession($ttl, $bucket_global, $bucket_local, $user) {
     // Try 5 times to find a unique UUID for this session (should always happen on first try)
     $uuid = null;
     $iter = 0;
@@ -91,6 +92,9 @@ class Redis implements ModelInterface {
     $key = Util::rand_alnum(32);
     $jwt = $this->_generateJWT($uuid, $ttl, $key);
 
+    // Set the user data array
+    $user_data = ($user === null ? null : $user->toArray());
+
     // Prep data for Redis
     $time = intval(gmdate('U'));
     $exp = ($ttl == 0 ? 0 : $time + $ttl);
@@ -106,6 +110,7 @@ class Redis implements ModelInterface {
           $this->options['id'] => $bucket_local,
         ),
       ),
+      'usr' => $user_data,
     );
     $json = json_encode($redis_data);
 
@@ -126,7 +131,8 @@ class Redis implements ModelInterface {
       array(
         'global' => $bucket_global,
         'local' => $bucket_local,
-      )
+      ),
+      $user
     );
 
     // Return Ostiary\Session object
@@ -175,7 +181,8 @@ class Redis implements ModelInterface {
       array(
         'global' => $r_json['bkt']['glb'],
         'local' => $bkt_local,
-      )
+      ),
+      $this->_generateUserObject($r_json['usr'])
     );
 
     // Return Ostiary\Session object
@@ -229,7 +236,8 @@ class Redis implements ModelInterface {
         array(
           'global' => $r_json['bkt']['glb'],
           'local' => $bkt_local,
-        )
+        ),
+        $this->_generateUserObject($r_json['usr'])
       );
     }
 
@@ -238,7 +246,7 @@ class Redis implements ModelInterface {
   }
 
 
-  public function setSession(Ostiary\Session $session) {
+  public function setSession(\Ostiary\Session $session) {
     // Get key from Redis
     $r_data = $this->redis->get($session->getSessionID());
     if (empty($r_data)) return false;
@@ -249,6 +257,9 @@ class Redis implements ModelInterface {
     $jwt_decoded = (array) JWT::decode($session->getJWT(), $r_json['key'], array('HS256'));
     if (empty($jwt_decoded)) return false;
     if (!hash_equals($jwt_decoded['sid'], $session->getSessionID())) return false;
+
+    // Set the user data array
+    $user_data = (empty($session->getUser()) ? null : $session->getUser()->toArray());
 
     // Prep data for Redis
     $redis_data = array(
@@ -261,6 +272,7 @@ class Redis implements ModelInterface {
        'glb' => $session->getBucket('global'),
        'loc' => $r_json['bkt']['loc'],
      ),
+     'usr' => $user_data,
     );
     $redis_data['bkt']['loc'][$this->options['id']] = $session->getBucket('local');
     $json = json_encode($redis_data);
@@ -387,6 +399,22 @@ class Redis implements ModelInterface {
       'sid' => $uuid,
     );
     return JWT::encode($payload, $key, 'HS256');
+  }
+
+
+  private function _generateUserObject($data) {
+    if (empty($data)) {
+      $user = null;
+    } else {
+      $user = new User(
+        $data['username'],
+        $data['display_name'],
+        $data['email'],
+        $data['roles'],
+        $data['parameters']
+      );
+    }
+    return $user;
   }
 
 }

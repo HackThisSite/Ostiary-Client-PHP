@@ -4,6 +4,7 @@ use \GuzzleHttp\Client as Guzzle;
 use Ostiary\Client\Utilities as Util;
 use Ostiary\Client\Model\ModelInterface;
 use Ostiary\Session;
+use Ostiary\User;
 use Ostiary\Client\Exception\OstiaryServerException;
 
 class Ostiary implements ModelInterface {
@@ -37,13 +38,14 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function createSession($ttl, $bucket_global, $bucket_local) {
+  public function createSession($ttl, $bucket_global, $bucket_local, $user) {
     $body = json_encode(array(
       'ttl' => $ttl,
       'bkt' => array(
         'glb' => $bucket_global,
         'loc' => $bucket_local,
       ),
+      'usr' => $user,
     ));
 
     $request = $this->guzzle->put('/v1/createSession');
@@ -109,7 +111,7 @@ class Ostiary implements ModelInterface {
   }
 
 
-  public function setSession(Ostiary\Session $session) {
+  public function setSession(\Ostiary\Session $session) {
     $body = json_encode(array(
      'sid' => $session->getSessionID(),
      'str' => $session->getTimeStarted(),
@@ -214,6 +216,17 @@ class Ostiary implements ModelInterface {
 
 
   private function _generateSessionObject($data) {
+    if (empty($data['usr'])) {
+      $user = null;
+    } else {
+      $user = new User(
+        $data['usr']['username'],
+        $data['usr']['display_name'],
+        $data['usr']['email'],
+        $data['usr']['roles'],
+        $data['usr']['parameters']
+      );
+    }
     return new Session(
       $data['sid'],
       $data['jwt'],
@@ -223,7 +236,8 @@ class Ostiary implements ModelInterface {
       array(
         'global' => $data['bkt']['glb'],
         'local' => $data['bkt']['loc'],
-      )
+      ),
+      $user
     );
   }
 

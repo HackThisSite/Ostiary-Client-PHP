@@ -16,7 +16,7 @@ Ostiary\Client interacts either directly with an Ostiary Redis environment, or w
 |[getAllSessions](#clientgetallsessions)|Get all sessions in Ostiary|
 |[getDriver](#clientgetdriver)|Return the raw driver object in use.|
 |[getSession](#clientgetsession)|Get an Ostiary session by the JSON Web Token identifier|
-|[getSessionFromCookie](#clientgetsessionfromcookie)|Get an Ostiary session by the contents of a cookie|
+|[getSessionFromCookie](#clientgetsessionfromcookie)|Get an Ostiary session from the contents of a cookie|
 |[setBucket](#clientsetbucket)|Set the data for a specific bucket|
 |[setDebugCallback](#clientsetdebugcallback)|Set the debug callback to be used for logging|
 |[setSession](#clientsetsession)|Set an Ostiary session to the values of an Ostiary\Session object|
@@ -60,7 +60,7 @@ Construct an Ostiary client.
 **Description**
 
 ```php
-public createSession (array $bucket_data, array $options)
+public createSession (array $bucket_data, \Ostiary\User|null $user, array $options)
 ```
 
 Create a new Ostiary session 
@@ -70,7 +70,9 @@ Create a new Ostiary session
 **Parameters**
 
 * `(array) $bucket_data`
-: [optional] Array of bucket data. Allowed indices: "global" and "local"  
+: [optional] Array of bucket data. Allowed indices: "global" and "local". Default: empty array  
+* `(\Ostiary\User|null) $user`
+: [optional] An Ostiary\User object, or null. Default: null  
 * `(array) $options`
 : [optional] Array of optional settings. Allowed key/values:  
    ttl  (int)   Override the TTL value for this Ostiary client. Default: -1  
@@ -238,7 +240,7 @@ Get an Ostiary session by the JSON Web Token identifier
 public getSessionFromCookie (string $cookie_name, array $options)
 ```
 
-Get an Ostiary session by the contents of a cookie 
+Get an Ostiary session from the contents of a cookie 
 
  
 

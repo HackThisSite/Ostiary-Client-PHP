@@ -17,6 +17,7 @@ Ostiary\Session stores data for an Ostiary session
 |[getTTL](#sessiongetttl)|Get the Time To Live (in seconds) for this session|
 |[getTimeExpiration](#sessiongettimeexpiration)|Get the unix timestamp of when this session will expire|
 |[getTimeStarted](#sessiongettimestarted)|Get the unix timestamp of when this session was started|
+|[getUser](#sessiongetuser)|Return an Ostiary\User for this session, if defined|
 |[setBucket](#sessionsetbucket)|Set the contents of a bucket|
 |[setCookie](#sessionsetcookie)|Write the JWT to a cookie|
 |[setJWT](#sessionsetjwt)|Set the JSON Web Token of this session|
@@ -24,6 +25,7 @@ Ostiary\Session stores data for an Ostiary session
 |[setTTL](#sessionsetttl)|Set the Time To Live (in seconds) for this session|
 |[setTimeExpiration](#sessionsettimeexpiration)|Set the unix timestamp for when this session will expire|
 |[setTimeStarted](#sessionsettimestarted)|Set the unix timestamp for when this session was started|
+|[setUser](#sessionsetuser)|Set the Ostiary\User object|
 |[toArray](#sessiontoarray)|Return all data for this class in an associative array|
 |[toJSON](#sessiontojson)|Return all data for this class in a JSON-encoded string|
 |[touchTimeExpiration](#sessiontouchtimeexpiration)|Update the expiration to now + value of TTL stored in this object (or overridden)|
@@ -36,7 +38,7 @@ Ostiary\Session stores data for an Ostiary session
 **Description**
 
 ```php
-public __construct (string $session_id, string $jwt, int $time_started, int $time_expiration, int $ttl, array $buckets)
+public __construct (string $session_id, string $jwt, int $time_started, int $time_expiration, int $ttl, array $buckets, \Ostiary\User $user)
 ```
 
 Construct an Ostiary session. 
@@ -59,6 +61,8 @@ Construct an Ostiary session.
 : Data buckets, global (accessible to all clients)  
    and local (accessible only to this client). Array indices must be only  
    "global" and "local". Values can be any data type allowed by json_encode().  
+* `(\Ostiary\User) $user`
+: [optional] An Ostiary\User object  
 
 **Return Values**
 
@@ -218,6 +222,31 @@ Get the unix timestamp of when this session was started
 `int`
 
 > Unix timestamp of when this session was started  
+
+
+
+
+### Session::getUser  
+
+**Description**
+
+```php
+public getUser (void)
+```
+
+Return an Ostiary\User for this session, if defined 
+
+ 
+
+**Parameters**
+
+`This function has no parameters.`
+
+**Return Values**
+
+`\Ostiary\User`
+
+> The Ostiary\User object, if defined  
 
 
 
@@ -452,6 +481,32 @@ Set the unix timestamp for when this session was started
 
 `\InvalidArgumentException`
 > Thrown if $timestamp_started is not an integer
+
+
+### Session::setUser  
+
+**Description**
+
+```php
+public setUser (\Ostiary\User|null )
+```
+
+Set the Ostiary\User object 
+
+ 
+
+**Parameters**
+
+* `(\Ostiary\User|null) `
+: The Ostiary\User object to set, or null to unset  
+
+**Return Values**
+
+`bool`
+
+> Always true  
+
+
 
 
 ### Session::toArray  

@@ -49,6 +49,12 @@ class Session {
     'local'  => null,
   );
 
+  /**
+   * An associated Ostiary\User object, if defined
+   * @ignore
+   */
+  private $user;
+
 
   /**
    * Construct an Ostiary session.
@@ -61,18 +67,22 @@ class Session {
    * @param array $buckets Data buckets, global (accessible to all clients)
    *    and local (accessible only to this client). Array indices must be only
    *    "global" and "local". Values can be any data type allowed by json_encode().
+   * @param Ostiary\User $user [optional] An Ostiary\User object
    * @throws InvalidArgumentException Thrown if any param is invalid
    */
-  public function __construct($session_id, $jwt, $time_started, $time_expiration, $ttl, $buckets) {
-    if (!$this->setSessionID($session_id)) return false;
-    if (!$this->setJWT($jwt)) return false;
-    if (!$this->setTimeStarted($time_started)) return false;
-    if (!$this->setTimeExpiration($time_expiration)) return false;
-    if (!$this->setTTL($ttl)) return false;
+  public function __construct($session_id, $jwt, $time_started, $time_expiration, $ttl, $buckets, \Ostiary\User $user = null) {
+    $this->setSessionID($session_id);
+    $this->setJWT($jwt);
+    $this->setTimeStarted($time_started);
+    $this->setTimeExpiration($time_expiration);
+    $this->setTTL($ttl);
+
     $bkt_glb = (isset($buckets['global']) ? $buckets['global'] : null);
     $bkt_loc = (isset($buckets['local']) ? $buckets['local'] : null);
-    if (!$this->setBucket('global', $bkt_glb)) return false;
-    if (!$this->setBucket('local', $bkt_loc)) return false;
+    $this->setBucket('global', $bkt_glb);
+    $this->setBucket('local', $bkt_loc);
+
+    $this->setUser($user);
   }
 
   /**
@@ -111,10 +121,9 @@ class Session {
    * @throws InvalidArgumentException Thrown if invalid UUID syntax is provided
    */
   public function setSessionID($uuid) {
-    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid)) {
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid))
       throw new \InvalidArgumentException('Invalid UUID syntax');
-      return false;
-    }
+
     $this->session_id = $uuid;
     return true;
   }
@@ -139,10 +148,9 @@ class Session {
    */
   public function setJWT($jwt) {
     $jwt_split = explode('.', $jwt);
-    if (count($jwt_split) != 3) {
+    if (count($jwt_split) != 3)
       throw new \InvalidArgumentException('Invalid JWT syntax');
-      return false;
-    }
+
     $this->jwt = $jwt;
     return true;
   }
@@ -178,11 +186,34 @@ class Session {
    * @throws InvalidArgumentException Thrown if invalid bucket type is specified
    */
   public function setBucket($bucket, $data) {
-    if (!in_array($bucket, array('global', 'local'))) {
+    if (!in_array($bucket, array('global', 'local')))
       throw new \InvalidArgumentException('Bucket type must be "global" or "local"');
-      return false;
-    }
+
     $this->buckets[$bucket] = $data;
+    return true;
+  }
+
+
+  /**
+   * Return an Ostiary\User for this session, if defined
+   *
+   * @return Ostiary\User The Ostiary\User object, if defined
+   */
+  public function getUser() {
+    return $this->user;
+  }
+
+
+  /**
+   * Set the Ostiary\User object
+   *
+   * @param Ostiary\User|null The Ostiary\User object to set, or null to unset
+   * @return bool Always true
+   */
+  public function setUser($user) {
+    if ($user !== null && !is_a($user, 'Ostiary\User'))
+      throw new \InvalidArgumentException('User object must be null or an instance of Ostiary\User');
+    $this->user = $user;
     return true;
   }
 
@@ -205,10 +236,9 @@ class Session {
    * @throws InvalidArgumentException Thrown if $timestamp_started is not an integer
    */
   public function setTimeStarted($timestamp_started) {
-    if (!is_int($timestamp_started)) {
+    if (!is_int($timestamp_started))
       throw new \InvalidArgumentException('Starting timestamp must be an integer value');
-      return false;
-    }
+
     $this->time_started = $timestamp_started;
     return true;
   }
@@ -232,10 +262,9 @@ class Session {
    * @throws InvalidArgumentException Thrown if $timestamp_expiration is not an integer
    */
   public function setTimeExpiration($timestamp_expiration) {
-    if (!is_int($timestamp_expiration)) {
+    if (!is_int($timestamp_expiration))
       throw new \InvalidArgumentException('Expiration timestamp must be an integer value');
-      return false;
-    }
+
     $this->time_expiration = $timestamp_expiration;
     return true;
   }
@@ -273,10 +302,9 @@ class Session {
    * @throws InvalidArgumentException Thrown if $ttl is not an integer
    */
   public function setTTL($ttl) {
-    if (!is_int($ttl)) {
+    if (!is_int($ttl))
       throw new \InvalidArgumentException('TTL must be an integer value');
-      return false;
-    }
+
     $this->ttl = $ttl;
     return true;
   }
@@ -297,7 +325,8 @@ class Session {
       'buckets'         => array(
         'global' => $this->buckets['global'],
         'local'  => $this->buckets['local'],
-      )
+      ),
+      'user'            => ($this->user === null ? null : $this->user->toArray()),
     );
   }
 

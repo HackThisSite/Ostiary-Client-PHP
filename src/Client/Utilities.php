@@ -48,7 +48,7 @@ class Utilities {
     *
     * @return string Decoded URL-safe base64-encoded string
     */
-   function base64_urldecode($data) {
+   public static function base64_urldecode($data) {
      return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
    }
 

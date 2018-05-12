@@ -133,7 +133,8 @@ class Client {
   /**
    * Create a new Ostiary session
    *
-   * @param array $bucket_data [optional] Array of bucket data. Allowed indices: "global" and "local"
+   * @param array $bucket_data [optional] Array of bucket data. Allowed indices: "global" and "local". Default: empty array
+   * @param Ostiary\User|null $user [optional] An Ostiary\User object, or null. Default: null
    * @param array $options [optional] Array of optional settings. Allowed key/values:
    *    ttl  (int)   Override the TTL value for this Ostiary client. Default: -1
    *       Allowed values: -1 = use TTL setting for this client, 0 = never expire, >0 = expire in X seconds
@@ -141,8 +142,13 @@ class Client {
    * @throws InvalidArgumentException Thrown if $bucket_data is not an array or if $options is invalid
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
-  public function createSession($bucket_data = array(), $options = array()) {
+  public function createSession($bucket_data = array(), $user = null, $options = array()) {
     Util::debug('createSession called');
+
+    // Validate user
+    if ($user !== null && !is_a($user, 'Ostiary\User'))
+      throw new \InvalidArgumentException('User object must be null or an instance of Ostiary\User');
+
     // Validate options
     $opts = array();
     try {
@@ -165,7 +171,7 @@ class Client {
     Util::debug('Creating session with TTL of '.$ttl);
 
     // Create and return an Ostiary\Session
-    return $this->driver->createSession($ttl, $bkt_global, $bkt_local);
+    return $this->driver->createSession($ttl, $bkt_global, $bkt_local, $user);
   }
 
 
@@ -198,7 +204,7 @@ class Client {
 
 
   /**
-   * Get an Ostiary session by the contents of a cookie
+   * Get an Ostiary session from the contents of a cookie
    *
    * @param string $cookie_name Name of the cookie
    * @param array $options [optional] Array of optional settings. Allowed key/values:
@@ -257,7 +263,7 @@ class Client {
    * @throws InvalidArgumentException Thrown if $session is not an Ostiary\Session object
    * @throws \Ostiary\Client\Exception\OstiaryServerException If the driver is Ostiary, this is thrown if there was an error interacting with the Ostiary server
    */
-  public function setSession(Ostiary\Session $session) {
+  public function setSession(\Ostiary\Session $session) {
     Util::debug('setSession called');
     // Check that we received an Ostiary\Session object
     if (!is_a($session, 'Ostiary\Session'))

@@ -5,6 +5,7 @@ return (object)[
   'format' => 'github',
   'classes' => [
     '\Ostiary\Session',
+    '\Ostiary\User',
     '\Ostiary\Client',
     '\Ostiary\Client\Exception\OstiaryServerException',
     '\Ostiary\Client\Exception\WebHookParseException',

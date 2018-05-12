@@ -3,6 +3,8 @@
 ## v0.1.2 - 2018-05-10
 
 * Added
+  * Added `getAllSessions()` call to Ostiary\Client
+  * Better UUID generator
   * More debug logging
 
 * Fixed
