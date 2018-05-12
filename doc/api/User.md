@@ -452,7 +452,7 @@ This will let you overwrite a list of specific parameters, or optionally flush a
 * `(array) $parameters`
 : Array of parameters to set  
 * `(bool) $flush`
-: [optional] Flush all parameters and overwrite with value of `$parameters`  
+: [optional] Flush all parameters and overwrite with value of `$parameters`. Default: false  
 
 **Return Values**
 

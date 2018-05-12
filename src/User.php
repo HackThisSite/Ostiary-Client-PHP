@@ -223,7 +223,7 @@ class User {
    * This will let you overwrite a list of specific parameters, or optionally flush all values and overwrite with a clean list.
    *
    * @param array $parameters Array of parameters to set
-   * @param bool $flush [optional] Flush all parameters and overwrite with value of `$parameters`
+   * @param bool $flush [optional] Flush all parameters and overwrite with value of `$parameters`. Default: false
    * @return bool True on success, false on failure
    * @throws InvalidArgumentException Thrown if any parameter name is invalid
    */
