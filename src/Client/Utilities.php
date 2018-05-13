@@ -63,7 +63,7 @@ class Utilities {
    * @return bool True if equal, false if not
    * @source http://php.net/manual/en/function.hash-equals.php#115635
    */
-  public function hash_equals($str1, $str2) {
+  public static function hash_equals($str1, $str2) {
     if (function_exists('hash_equals')) {
       return hash_equals($str1, $str2);
     } else {
