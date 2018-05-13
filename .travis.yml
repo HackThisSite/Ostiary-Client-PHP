@@ -19,7 +19,7 @@ before_install:
 install: travis_retry composer update --prefer-dist
 
 script:
-  - ./vendor/bin/phpunit -v
+  - ./vendor/bin/phpunit -v --exclude-group ostiary
 
 cache:
   directories:

@@ -185,7 +185,7 @@ class Client {
     Util::debug('Creating session with TTL of '.$ttl);
 
     // Create and return an Ostiary\Session
-    return $this->driver->createSession($ttl, $vals['ip_address'], $$vals['bucket_global'], $vals['bucket_local'], $user);
+    return $this->driver->createSession($ttl, $vals['ip_address'], $vals['bucket_global'], $vals['bucket_local'], $vals['user']);
   }
 
 
