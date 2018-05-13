@@ -47,7 +47,7 @@ class User {
    * @param string $username [optional] Username. Default: ""
    * @param string $display_name [optional] Display name (also known as 'gecos'). Default: ""
    * @param string $email [optional] Email address. Default: ""
-   * @param array $roles [optional] Array of authorization role. Default: empty array
+   * @param array $roles [optional] Array of authorization roles. Default: empty array
    * @param array $parameters [optional] Array of additional parameters. Default: empty array
    * @throws InvalidArgumentException Thrown if any param is invalid
    */
@@ -150,7 +150,7 @@ class User {
   /**
    * Get the authorization roles
    *
-   * @return array Array of authorization role
+   * @return array Array of authorization roles
    */
   public function getRoles() {
     return $this->roles;
@@ -162,7 +162,7 @@ class User {
    *
    * This does not merge with existing settings, but will overwrite the roles array.
    *
-   * @param array $roles Array of authorization role. Set to blank array to flush roles.
+   * @param array $roles Array of authorization roles. Set to blank array to flush roles.
    * @return bool Always true
    */
   public function setRoles($roles) {
