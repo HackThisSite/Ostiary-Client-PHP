@@ -14,6 +14,44 @@ class RedisTest extends TestCase {
   /**
    * @group redis
    */
+  public function testRedisDriverBareSession() {
+    $ost = new OstiaryClient(array(
+      'id' => 'test',
+      'secret' => 'secret',
+      'driver' => 'redis',
+      'redis' => 'tcp://localhost',
+      'ttl' => 10,
+    ));
+    $this->assertInstanceOf(
+      \Ostiary\Client::class,
+      $ost
+    );
+    $this->assertInstanceOf(
+      \Predis\Client::class,
+      $ost->getDriver()
+    );
+
+    $time = intval(gmdate('U'));
+    $session = $ost->createSession();
+
+    $this->assertInstanceOf(
+      \Ostiary\Session::class,
+      $session
+    );
+    $this->assertNotEmpty($session->getJWT());
+    $this->assertRegExp('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $session->getSessionID());
+    // Use >= in case of rare occurance of $time < getTimeStarted
+    $this->assertGreaterThanOrEqual($time, $session->getTimeStarted());
+    $this->assertGreaterThanOrEqual($time + 10, $session->getTimeExpiration());
+    $this->assertEquals(10, $session->getTTL());
+    $this->assertEmpty($session->getBucket('global'));
+    $this->assertEmpty($session->getBucket('local'));
+    $this->assertEmpty($session->getUser());
+  }
+
+  /**
+   * @group redis
+   */
   public function testRedisDriverComplete() {
     $ost = new OstiaryClient(array(
       'id' => 'test',
