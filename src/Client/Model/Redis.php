@@ -157,7 +157,7 @@ class Redis implements ModelInterface {
     // Validate JWT
     $jwt_decoded = (array) JWT::decode($jwt, $r_json['key'], array('HS256'));
     if (empty($jwt_decoded)) return null;
-    if (!hash_equals($jwt_decoded['sid'], $uuid)) return null;
+    if (!Util::hash_equals($jwt_decoded['sid'], $uuid)) return null;
 
     // Bump Redis expiration, if set
     if ($update_expiration) {
@@ -260,7 +260,7 @@ class Redis implements ModelInterface {
     // Validate JWT
     $jwt_decoded = (array) JWT::decode($session->getJWT(), $r_json['key'], array('HS256'));
     if (empty($jwt_decoded)) return false;
-    if (!hash_equals($jwt_decoded['sid'], $session->getSessionID())) return false;
+    if (!Util::hash_equals($jwt_decoded['sid'], $session->getSessionID())) return false;
 
     // Set the user data array
     $user_data = (empty($session->getUser()) ? null : $session->getUser()->toArray());
@@ -308,7 +308,7 @@ class Redis implements ModelInterface {
     // Validate JWT
     $jwt_decoded = (array) JWT::decode($jwt, $r_json['key'], array('HS256'));
     if (empty($jwt_decoded)) return false;
-    if (!hash_equals($jwt_decoded['sid'], $uuid)) return null;
+    if (!Util::hash_equals($jwt_decoded['sid'], $uuid)) return null;
 
     // Bump Redis expiration, if set
     if ($update_expiration) {
@@ -373,7 +373,7 @@ class Redis implements ModelInterface {
     // Validate JWT
     $jwt_decoded = (array) JWT::decode($jwt, $r_json['key'], array('HS256'));
     if (empty($jwt_decoded)) return null;
-    if (!hash_equals($jwt_decoded['sid'], $uuid)) return null;
+    if (!Util::hash_equals($jwt_decoded['sid'], $uuid)) return null;
 
     // Delete record
     return $this->redis->del($uuid);

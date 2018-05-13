@@ -30,27 +30,53 @@ class Utilities {
   }
 
 
-  /**
-   * Generate URL-safe base64-encoded string
-   *
-   * @source http://us1.php.net/manual/en/function.base64-encode.php#103849
-   *
-   * @return string URL-safe base64-encoded string
-   */
+   /**
+    * Generate URL-safe base64-encoded string
+    *
+    * @source http://php.net/manual/en/function.base64-encode.php#103849
+    *
+    * @return string URL-safe base64-encoded string
+    */
    public static function base64_urlencode($data) {
      return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
    }
 
    /**
-    * Decode a URL-safe base64-encoded string
-    *
-    * @source http://us1.php.net/manual/en/function.base64-encode.php#103849
-    *
-    * @return string Decoded URL-safe base64-encoded string
-    */
-   public static function base64_urldecode($data) {
-     return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
-   }
+   * Decode a URL-safe base64-encoded string
+   *
+   * @source http://php.net/manual/en/function.base64-encode.php#103849
+   *
+   * @return string Decoded URL-safe base64-encoded string
+   */
+  public static function base64_urldecode($data) {
+   return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
+  }
+
+
+  /**
+   * Do a time-safe string comparison
+   *
+   * Provides backwards compatibility for PHP 5.5
+   *
+   * @param string $str1 Expected value
+   * @param string $str2 Value to test
+   * @return bool True if equal, false if not
+   * @source http://php.net/manual/en/function.hash-equals.php#115635
+   */
+  public function hash_equals($str1, $str2) {
+    if (function_exists('hash_equals')) {
+      return hash_equals($str1, $str2);
+    } else {
+      if (strlen($str1) != strlen($str2)) {
+        return false;
+      } else {
+        $res = $str1 ^ $str2;
+        $ret = 0;
+        for($i = strlen($res) - 1; $i >= 0; $i--) $ret |= ord($res[$i]);
+        return !$ret;
+      }
+    }
+  }
 
 
   /**
